@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redact</title>
+</head>
+<body>
+    <textarea id="editor" rows="2" cols="40"></textarea>
+    <button id="save">Save</button>
+    <button id="clear">Clear</button>
+
+    <label for="replaceWord">Word to Replace:</label>
+    <input type="text" id="replaceWord">
+    <button id="replace">Replace</button>
+<p></p>
+    <script>
+        // Get references to HTML elements
+        const editor = document.getElementById('editor');
+        const saveButton = document.getElementById('save');
+        const clearButton = document.getElementById('clear');
+        const replaceWordInput = document.getElementById('replaceWord');
+        const replaceButton = document.getElementById('replace');
+        const displayText = document.getElementById('show');
+        // Function to save the text to localStorage
+        function saveText() {
+            const text = editor.value;
+            localStorage.setItem('text', text);
+        }
+
+        // Function to load the text from localStorage
+        function loadText() {
+            const text = localStorage.getItem('text');
+            editor.value = text || '';
+           
+        }
+
+        // Function to replace a specified word with asterisks
+        function replaceWord() {
+            const text = editor.value;
+            const wordToReplace = replaceWordInput.value;
+            const regex = new RegExp(wordToReplace, 'gi'); // 'gi' means global and case-insensitive
+            const censoredText = text.replace(regex, '****');
+            editor.value = censoredText;
+        }
+
+        // Function to clear the editor
+        function clearText() {
+            editor.value = '';
+            localStorage.removeItem('text');
+        }
+
+        // Load saved text on page load
+        loadText();
+
+        // Add event listeners
+        saveButton.addEventListener('click', saveText);
+        clearButton.addEventListener('click', clearText);
+        replaceButton.addEventListener('click', replaceWord);
+    </script>
+</body>
+</html>

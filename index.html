@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text Editor with Word Replacement and Bar Chart</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            background-color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            background-color: #020047;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .editor-container {
+            padding: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        label, input, button {
+            margin: 5px;
+        }
+        
+        .statistics {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .stats {
+            text-align: center;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+        }
+        @media only screen and (max-width: 800px) {
+  
+  .controls{
+    display: block;
+    width: 500;
+ 
+  }
+ 
+  .statistics{
+    display: block;
+    justify-self: start;
+    margin-left: 0;
+    text-align: left;
+   
+  }
+}
+            </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Text Editor</h1>
+        </header>
+        <div class="editor-container">
+            <textarea id="editor" rows="10" cols="40"></textarea>
+        </div>
+        <div class="controls">
+            <label for="replaceWord">Word to Replace:</label>
+            <br>
+            <input type="text" id="replaceWord">
+            <br>
+            <label for="customReplacement">Custom Replacement Text:</label>
+            <br>
+            <input type="text" id ="customReplacement">
+        <br>
+            <button id="replace">Replace</button>
+            <button id="clear">Clear</button>
+        </div>
+        <div class="statistics">
+            <div class="stats">
+                Characters Scrambled: <span id="charactersScrambled">0</span>
+            </div>
+            <br>
+            <div class="stats">
+                Time Taken: <span id="timeTaken">0 seconds</span>
+            </div>
+            <br>
+            <div class="stats">
+                Words Scanned: <span id="wordsScanned">0</span>
+            </div>
+            <br>
+            <div class="stats">
+                Words to Be Scrambled: <span id="wordsToBeScrambled">0</span>
+            </div>
+            <br>
+        </div>
+        <div class="chart-container">
+            <canvas id="statisticsChart"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        const editor = document.getElementById('editor');
+        const replaceWordInput = document.getElementById('replaceWord');
+        const customReplacementInput = document.getElementById('customReplacement');
+        const replaceButton = document.getElementById('replace');
+        const clearButton = document.getElementById('clear');
+        const charactersScrambledSpan = document.getElementById('charactersScrambled');
+        const timeTakenSpan = document.getElementById('timeTaken');
+        const wordsScannedSpan = document.getElementById('wordsScanned');
+        const wordsToBeScrambledSpan = document.getElementById('wordsToBeScrambled');
+        
+        let originalText = '';
+        let charactersScrambled = 0;
+        let startTime = 0;
+        let timeTaken = 0;
+
+        replaceButton.addEventListener('click', replaceWordCustom);
+        clearButton.addEventListener('click', clearText);
+
+        function countStatistics(text) {
+            const words = text.match(/\b\w+\b/g) || [];
+            const wordToReplace = replaceWordInput.value;
+            const regex = new RegExp('\\b' + escapeRegExp(wordToReplace) + '\\b', 'gi');
+            const wordsToBeReplaced = text.match(regex) || [];
+
+            wordsScannedSpan.textContent = words.length;
+            wordsToBeScrambledSpan.textContent = wordsToBeReplaced.length;
+        }
+
+        function replaceWordCustom() {
+            startTime = new Date().getTime();
+            originalText = editor.value;
+            const text = originalText;
+            const wordToReplace = replaceWordInput.value;
+            const customReplacement = customReplacementInput.value;
+
+            const regex = new RegExp('\\b' + escapeRegExp(wordToReplace) + '\\b', 'gi');
+            const censoredText = text.replace(regex, function(match) {
+                charactersScrambled += match.length;
+                return customReplacement;
+            });
+
+            editor.value = censoredText;
+            
+            const endTime = new Date().getTime();
+            timeTaken = (endTime - startTime) / 1000; // Time taken in seconds
+            timeTakenSpan.textContent = timeTaken + ' seconds';
+            charactersScrambledSpan.textContent = charactersScrambled;
+
+            countStatistics(censoredText);
+            
+            // Update the bar chart
+            updateStatisticsChart();
+        }
+
+        function clearText() {
+            editor.value = '';
+            originalText = '';
+            charactersScrambled = 0;
+            timeTaken = 0;
+            wordsScannedSpan.textContent = '0';
+            wordsToBeScrambledSpan.textContent = '0';
+            timeTakenSpan.textContent = '0 seconds';
+            charactersScrambledSpan.textContent = '0';
+            
+            // Clear the bar chart
+            clearStatisticsChart();
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function updateStatisticsChart() {
+            const ctx = document.getElementById('statisticsChart').getContext('2d');
+            
+            const statisticsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Characters Scrambled', 'Time Taken (seconds)', 'Words Scanned', 'Words to Be Scrambled'],
+                    datasets: [{
+                        label: 'Statistics',
+                        data: [charactersScrambled, timeTaken, wordsScannedSpan.textContent, wordsToBeScrambledSpan.textContent],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)',
+                        ],
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        }
+
+        function clearStatisticsChart() {
+            const ctx = document.getElementById('statisticsChart').getContext('2d');
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+         
+    </script>
+     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

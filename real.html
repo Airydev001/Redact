@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redact R</title>
+</head>
+<body>
+    <textarea id="editor" rows="10" cols="40"></textarea>
+    <label for="replaceWord">Word to Replace:</label>
+    <input type="text" id="replaceWord">
+    <label for="customReplacement">Custom Replacement Text:</label>
+    <input type="text" id="customReplacement">
+    <button id="replace">Replace</button>
+    <button id="clear">Clear</button>
+
+    <div id="statistics">
+        Words Scanned: <span id="wordsScanned">0</span><br>
+        Words to Be Scrambled: <span id="wordsToBeScrambled">0</span>
+    </div>
+
+    <script>
+        // Get references to HTML elements
+        const editor = document.getElementById('editor');
+        const replaceWordInput = document.getElementById('replaceWord');
+        const customReplacementInput = document.getElementById('customReplacement');
+        const replaceButton = document.getElementById('replace');
+        const clearButton = document.getElementById('clear');
+        const wordsScannedSpan = document.getElementById('wordsScanned');
+        const wordsToBeScrambledSpan = document.getElementById('wordsToBeScrambled');
+
+        // Function to count and display statistics
+        function countStatistics(text) {
+            // Split the text into words
+            const words = text.match(/\b\w+\b/g);
+            
+            // Update the words scanned count
+            wordsScannedSpan.textContent = words ? words.length : 0;
+            
+            // Count words to be scrambled
+            const wordToReplace = replaceWordInput.value;
+            const regex = new RegExp('\\b' + escapeRegExp(wordToReplace) + '\\b', 'gi');
+            const wordsToBeScrambled = text.match(regex);
+            wordsToBeScrambledSpan.textContent = wordsToBeScrambled ? wordsToBeScrambled.length : 0;
+        }
+
+        // Function to replace a specified word with custom replacement
+        function replaceWordCustom() {
+            const text = editor.value;
+            const wordToReplace = replaceWordInput.value;
+            const customReplacement = customReplacementInput.value;
+
+            // Create a regular expression with word boundaries (\b) and the 'g' flag for global replacement.
+            const regex = new RegExp('\\b' + escapeRegExp(wordToReplace) + '\\b', 'gi');
+
+            // Replace the specified word with the custom replacement text.
+            const censoredText = text.replace(regex, customReplacement);
+
+            editor.value = censoredText;
+
+            // Count and display statistics
+            countStatistics(censoredText);
+        }
+
+        // Function to escape special characters in a string to use in a regular expression.
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Add event listener for the "Replace" button
+        replaceButton.addEventListener('click', replaceWordCustom);
+
+        // Add event listener for the "Clear" button
+        clearButton.addEventListener('click', () => {
+            editor.value = '';
+            countStatistics('');
+        });
+    </script>
+</body>
+</html>

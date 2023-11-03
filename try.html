@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redact</title>
+</head>
+<body>
+    <textarea id="editor" rows="10" cols="40"></textarea>
+    <label for="replaceWord">Word to Replace:</label>
+    <input type="text" id="replaceWord">
+    <label for="customReplacement">Custom Replacement Text:</label>
+    <input type="text" id="customReplacement">
+    <button id="replace">Replace</button>
+    <button id="clear">Clear</button>
+
+    <script>
+        // Get references to HTML elements
+        const editor = document.getElementById('editor');
+        const replaceWordInput = document.getElementById('replaceWord');
+        const customReplacementInput = document.getElementById('customReplacement');
+        const replaceButton = document.getElementById('replace');
+        const clearButton = document.getElementById('clear');
+
+        // Function to replace a specified word with custom replacement
+        function replaceWordCustom() {
+            const text = editor.value;
+            const wordToReplace = replaceWordInput.value;
+            const customReplacement = customReplacementInput.value;
+
+            // Create a regular expression with word boundaries (\b) and the 'g' flag for global replacement.
+            const regex = new RegExp('\\b' + escapeRegExp(wordToReplace) + '\\b', 'gi');
+
+            // Replace the specified word with the custom replacement text.
+            const censoredText = text.replace(regex, customReplacement);
+
+            editor.value = censoredText;
+        }
+
+        // Function to escape special characters in a string to use in a regular expression.
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Add event listener for the "Replace" button
+        replaceButton.addEventListener('click', replaceWordCustom);
+
+        // Add event listener for the "Clear" button
+        clearButton.addEventListener('click', () => {
+            editor.value = '';
+        });
+    </script>
+</body>
+</html>
